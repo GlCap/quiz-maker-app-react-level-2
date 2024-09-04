@@ -1,0 +1,20 @@
+.answer-button {
+  background-color: transparent;
+  border-color: green;
+  color: green;
+}
+
+.answer-button:hover {
+  background-color: green;
+  color: white;
+}
+
+.answer-button[aria-checked='true'] {
+  background-color: green;
+  color: white;
+}
+
+.answer-button[aria-invalid='true'] {
+  background-color: red;
+  color: white;
+}
