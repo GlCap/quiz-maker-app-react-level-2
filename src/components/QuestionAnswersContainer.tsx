@@ -1,15 +1,13 @@
 import "./QuestionAnswersContainer.css";
-import { useMemo } from "react";
-import { randomize } from "../utils";
+
 import { AnswerButton } from "./AnswerButton";
 
 export interface QuestionAnswersSelectorProps {
   question: string;
   correctAnswer: string;
-  incorrectAnswers: string[];
+  answers: string[];
   selectedAnswer: string;
   handleSelect?: (answer: string) => void;
-  randomizeAnswers?: boolean;
   showResults?: boolean;
 }
 
@@ -20,16 +18,10 @@ export const QuestionAnswersContainer = (
     question,
     selectedAnswer,
     correctAnswer,
-    incorrectAnswers,
-    randomizeAnswers,
+    answers,
     showResults,
     handleSelect,
   } = props;
-
-  const answers = useMemo(() => {
-    const merged = [correctAnswer, ...incorrectAnswers];
-    return randomizeAnswers ? randomize(merged) : merged;
-  }, [correctAnswer, incorrectAnswers, randomizeAnswers]);
 
   return (
     <div className="question">

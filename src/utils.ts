@@ -10,7 +10,7 @@ export const decodeHtml = (html: string) => {
 /**
  * Randomize the order of the array
  */
-export const randomize = (array: string[]) => {
+export const randomizeArray = (array: string[]) => {
   return array
     .map((a) => ({ sort: Math.random(), value: a }))
     .sort((a, b) => a.sort - b.sort)

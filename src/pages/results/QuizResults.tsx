@@ -40,10 +40,10 @@ export const QuizResults = () => {
       <div className="questions-container">
         {state.questionsInfo.map((questionInfo) => (
           <QuestionAnswersContainer
-            key={questionInfo.question.replace(" ", "_")}
+            key={questionInfo.question}
             question={questionInfo.question}
             correctAnswer={questionInfo.correctAnswer}
-            incorrectAnswers={questionInfo.incorrectAnswers}
+            answers={questionInfo.answers}
             selectedAnswer={state.results?.[questionInfo.question]}
             showResults
           />

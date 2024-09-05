@@ -1,10 +1,10 @@
+import "./QuizHome.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCategories } from "../../api/category";
 import { QuestionsSelector } from "../../components/QuestionsSelector";
 import { QuizInfoSelector } from "../../components/QuizInfoSelector";
 import type { QuizInfo, QuizState } from "../../types";
-import "./QuizHome.css";
 
 export const QuizHome = () => {
   const [quizInfo, setQuizInfo] = useState<QuizInfo>();

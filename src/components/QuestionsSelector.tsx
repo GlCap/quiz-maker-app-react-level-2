@@ -1,9 +1,14 @@
 import "./QuestionsSelector.css";
 import { useEffect, useMemo, useState } from "react";
 import { useQuestions } from "../api/questions";
-import { decodeHtml } from "../utils";
+import { decodeHtml, randomizeArray } from "../utils";
 import { QuestionAnswersContainer } from "./QuestionAnswersContainer";
-import type { QuizState, QuizInfo, QuizResultDict } from "../types";
+import type {
+  QuizState,
+  QuizInfo,
+  QuizResultDict,
+  QuestionInfoQuiz,
+} from "../types";
 
 export interface QuizSelectorProps {
   quizInfo: QuizInfo;
@@ -20,15 +25,22 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
     quizInfo.difficulty
   );
 
-  const questionsInfoForQuiz = useMemo(
+  const questionsInfoForQuiz: QuestionInfoQuiz[] = useMemo(
     () =>
-      questionsInfo.map((questionInfo) => ({
-        question: decodeHtml(questionInfo.question),
-        correctAnswer: decodeHtml(questionInfo.correct_answer),
-        incorrectAnswers: questionInfo.incorrect_answers.map((answer) =>
-          decodeHtml(answer)
-        ),
-      })),
+      questionsInfo.map((questionInfo) => {
+        const correctAnswer = decodeHtml(questionInfo.correct_answer);
+
+        const answers = randomizeArray([
+          correctAnswer,
+          ...questionInfo.incorrect_answers.map((answer) => decodeHtml(answer)),
+        ]);
+
+        return {
+          answers,
+          question: decodeHtml(questionInfo.question),
+          correctAnswer: correctAnswer,
+        };
+      }),
     [questionsInfo]
   );
 
@@ -74,13 +86,12 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
         ) : (
           questionsInfoForQuiz.map((questionInfo) => (
             <QuestionAnswersContainer
-              key={questionInfo.question.replace(" ", "_")}
+              key={questionInfo.question}
               question={questionInfo.question}
-              correctAnswer={questionInfo.correctAnswer || ""}
-              incorrectAnswers={questionInfo.incorrectAnswers || []}
-              randomizeAnswers
+              correctAnswer={questionInfo.correctAnswer}
+              answers={questionInfo.answers}
               selectedAnswer={
-                selectedAnswersDict?.[questionInfo.question] || ""
+                selectedAnswersDict?.[questionInfo.question] || "invalid"
               }
               handleSelect={(answer) => {
                 setSelectedAnswersDict((prev) => ({

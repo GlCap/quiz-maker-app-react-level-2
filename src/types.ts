@@ -6,7 +6,7 @@ export interface QuizInfo {
 export interface QuestionInfoQuiz {
   question: string;
   correctAnswer: string;
-  incorrectAnswers: string[];
+  answers: string[];
 }
 
 export type QuizResultDict = Record<string, string>;
