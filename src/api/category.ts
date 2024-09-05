@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import throttle from "lodash.throttle";
+import { OPEN_T_DB_RATE_LIMIT } from "../constants";
 
-const endpoint = 'https://opentdb.com/api_category.php';
+const endpoint = "https://opentdb.com/api_category.php";
 
 export interface TriviaCategory {
   id: number;
@@ -18,6 +20,8 @@ const getCategories = async (): Promise<TriviaResponse> => {
   return data;
 };
 
+const getCategoriesThrottled = throttle(getCategories, OPEN_T_DB_RATE_LIMIT);
+
 const comparator = Intl.Collator().compare;
 
 export const useCategories = () => {
@@ -27,7 +31,7 @@ export const useCategories = () => {
 
   useEffect(() => {
     setLoading(true);
-    getCategories()
+    getCategoriesThrottled()
       .then((data) => {
         setError(undefined);
         setCategories(

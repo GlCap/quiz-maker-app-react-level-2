@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import throttle from "lodash.throttle";
+import { OPEN_T_DB_RATE_LIMIT } from "../constants";
 
-const endpoint = 'https://opentdb.com/api.php';
+const endpoint = "https://opentdb.com/api.php";
 
-export interface Questions {
+export interface QuestionInfo {
   type: string;
   difficulty: string;
   category: string;
@@ -11,47 +13,59 @@ export interface Questions {
   incorrect_answers: string[];
 }
 
-export interface QuestionsReponse {
+export interface QuestionsResponse {
   response_code: number;
-  results: Questions[];
+  results: QuestionInfo[];
 }
 
 const getQuestions = async (
-  categoryId: number,
+  categoryId: string,
   difficulty: string,
   amount = 5
-): Promise<QuestionsReponse> => {
+): Promise<QuestionsResponse> => {
   const url = new URL(endpoint);
-  url.searchParams.set('amount', amount.toString());
-  url.searchParams.set('category', categoryId.toString());
-  url.searchParams.set('difficulty', difficulty.toLowerCase());
-  url.searchParams.set('type', 'multiple');
+  url.searchParams.set("amount", amount.toString());
+  url.searchParams.set("category", categoryId);
+  url.searchParams.set("difficulty", difficulty.toLowerCase());
+  url.searchParams.set("type", "multiple");
 
   const request = new Request(url);
   const response = await fetch(request);
   const data = await response.json();
 
+  if (data.response_code !== 0) {
+    const errorMsg = `Error in fetching data: ${response.statusText}`;
+    throw new Error(errorMsg);
+  }
+
+  if (!data.results) {
+    throw new Error("No results found");
+  }
+
   return data;
 };
 
+const getQuestionsThrottled = throttle(getQuestions, OPEN_T_DB_RATE_LIMIT);
+
 export const useQuestions = (
-  categoryId: number,
+  categoryId: string,
   difficulty: string,
   amount = 5
 ) => {
-  const [questions, setQuestions] = useState<Questions[]>([]);
+  const [questions, setQuestions] = useState<QuestionInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error>();
 
   useEffect(() => {
     setLoading(true);
-    getQuestions(categoryId, difficulty, amount)
+
+    getQuestionsThrottled(categoryId, difficulty, amount)
       .then((data) => {
         setError(undefined);
-        setQuestions(data.results);
+        setQuestions(data.results || []);
       })
       .catch((err) => {
-        console.error(`Error in fetchind data from ${endpoint}`, err);
+        console.error(`Error in fetching data from ${endpoint}`, err);
         setError(err);
         setQuestions([]);
       })

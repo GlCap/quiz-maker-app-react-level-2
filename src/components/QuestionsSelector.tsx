@@ -1,71 +1,69 @@
-import { TriviaCategory } from '../api/category';
-import { Questions } from '../api/questions';
-import { TRIVIA_DIFFICULTIES } from '../constants';
-import { AnswerButton } from './AnswerButton';
-
-export interface QuizInfo {
-  categoryId: string;
-  difficulty: string;
-}
+import { useMemo, useState } from "react";
+import { useQuestions } from "../api/questions";
+import { decodeHtml } from "../utils";
+import { QuestionAnswersContainer } from "./QuestionAnswersContainer";
+import type { QuizState, QuizInfo, QuizResultDict } from "../types";
 
 export interface QuizSelectorProps {
-  questions: Questions[];
-  onSubmit: (data: QuizInfo) => void;
+  quizInfo: QuizInfo;
+  onSubmit: (data: QuizState) => void;
 }
 
-export const QuizInfoSelector = (props: QuizSelectorProps) => {
-  const { questions, onSubmit } = props;
+export const QuestionsSelector = (props: QuizSelectorProps) => {
+  const { quizInfo, onSubmit } = props;
+  const [selectedAnswersDict, setSelectedAnswersDict] =
+    useState<QuizResultDict>({});
+
+  const [questionsInfo, questionsLoading, questionsError] = useQuestions(
+    quizInfo.categoryId,
+    quizInfo.difficulty
+  );
+
+  const questionsInfoForQuiz = useMemo(
+    () =>
+      questionsInfo.map((questionInfo) => ({
+        question: decodeHtml(questionInfo.question),
+        correctAnswer: decodeHtml(questionInfo.correct_answer),
+        incorrectAnswers: questionInfo.incorrect_answers.map((answer) =>
+          decodeHtml(answer)
+        ),
+      })),
+    [questionsInfo]
+  );
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-
-    const rawData = {
-      categoryId: formData.get('category'),
-      difficulty: formData.get('difficulty'),
-    };
-
-    console.debug(rawData);
-
-    if (
-      typeof rawData.categoryId !== 'string' ||
-      typeof rawData.difficulty !== 'string'
-    ) {
-      console.debug('invalid data', rawData);
-      onSubmit({
-        categoryId: '-1',
-        difficulty: '-',
-      });
-      return;
-    }
-
-    const data: QuizInfo = {
-      categoryId: rawData.categoryId,
-      difficulty: rawData.difficulty,
-    };
-
-    console.debug(data);
-
-    onSubmit(data);
+    onSubmit({
+      results: selectedAnswersDict,
+      questionsInfo: questionsInfoForQuiz,
+    });
   };
 
   return (
     <form onSubmit={handleSubmit}>
-     {questions.map( (question) => <}
+      {questionsLoading ? (
+        <p>Loading...</p>
+      ) : (
+        questionsInfoForQuiz.map((questionInfo) => (
+          <QuestionAnswersContainer
+            key={questionInfo.question.replace(" ", "_")}
+            question={questionInfo.question}
+            correctAnswer={questionInfo.correctAnswer || ""}
+            incorrectAnswers={questionInfo.incorrectAnswers || []}
+            selectedAnswer={selectedAnswersDict?.[questionInfo.question] || ""}
+            handleSelect={(answer) => {
+              setSelectedAnswersDict((prev) => ({
+                ...prev,
+                [questionInfo.question]: answer,
+              }));
+            }}
+          />
+        ))
+      )}
+      {questionsError && <strong>{questionsError.message}</strong>}
 
-      <select id="difficultySelect" name="difficulty" defaultValue="Select">
-        <option key={'default'}>Select difficulty</option>
-        {Object.entries(TRIVIA_DIFFICULTIES).map(([label, value]) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-
-      <button id="createBtn" type="submit">
-        Create
-      </button>
+      <button type="submit">Submit</button>
     </form>
   );
 };
