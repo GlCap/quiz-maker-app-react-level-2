@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import throttle from "lodash.throttle";
-import { OPEN_T_DB_RATE_LIMIT } from "../constants";
+import { OPEN_T_DB_RATE_LIMIT, OpenTDBErrorCodes } from "../constants";
 
 const endpoint = "https://opentdb.com/api.php";
 
@@ -33,9 +33,12 @@ const getQuestions = async (
   const response = await fetch(request);
   const data = await response.json();
 
-  if (data.response_code !== 0) {
-    const errorMsg = `Error in fetching data: ${response.statusText}`;
-    throw new Error(errorMsg);
+  const responseCode = data.response_code;
+  if (typeof responseCode === "number" && responseCode !== 0) {
+    const reason =
+      OpenTDBErrorCodes[responseCode as keyof typeof OpenTDBErrorCodes] ||
+      "unknown error";
+    throw new Error(`Error [${responseCode}] in fetching data: ${reason}`);
   }
 
   if (!data.results) {

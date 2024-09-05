@@ -78,6 +78,7 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
               question={questionInfo.question}
               correctAnswer={questionInfo.correctAnswer || ""}
               incorrectAnswers={questionInfo.incorrectAnswers || []}
+              randomizeAnswers
               selectedAnswer={
                 selectedAnswersDict?.[questionInfo.question] || ""
               }
@@ -93,7 +94,7 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
         {questionsError && <strong>{questionsError.message}</strong>}
       </div>
 
-      {isReady && (
+      {isReady && !questionsError && (
         <button className="submit-button" type="submit">
           Submit
         </button>
