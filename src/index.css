@@ -42,7 +42,6 @@ select {
   font-size: 0.8em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   transition: border-color 0.25s;
 }
 select:hover {
