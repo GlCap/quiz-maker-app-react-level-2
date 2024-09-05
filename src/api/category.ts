@@ -22,7 +22,10 @@ const getCategories = async (): Promise<TriviaResponse> => {
 
 const getCategoriesThrottled = throttle(getCategories, OPEN_T_DB_RATE_LIMIT);
 
-const comparator = Intl.Collator().compare;
+const enCollator = new Intl.Collator("en");
+
+const comparator = (a: TriviaCategory, b: TriviaCategory) =>
+  enCollator.compare(a.name, b.name);
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<TriviaCategory[]>([]);
@@ -33,13 +36,12 @@ export const useCategories = () => {
     setLoading(true);
     getCategoriesThrottled()
       .then((data) => {
+        data.trivia_categories.sort(comparator);
         setError(undefined);
-        setCategories(
-          data.trivia_categories.sort((a, b) => comparator(a.name, b.name))
-        );
+        setCategories(data.trivia_categories);
       })
       .catch((err) => {
-        console.error(`Error in fetchind data from ${endpoint}`, err);
+        console.error(`Error in fetching data from ${endpoint}`, err);
         setError(err);
         setCategories([]);
       })

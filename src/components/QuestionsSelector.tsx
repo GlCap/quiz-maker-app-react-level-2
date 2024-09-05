@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import "./QuestionsSelector.css";
+import { useEffect, useMemo, useState } from "react";
 import { useQuestions } from "../api/questions";
 import { decodeHtml } from "../utils";
 import { QuestionAnswersContainer } from "./QuestionAnswersContainer";
@@ -31,8 +32,28 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
     [questionsInfo]
   );
 
+  const questionsCount = useMemo(
+    () => questionsInfoForQuiz.length,
+    [questionsInfoForQuiz]
+  );
+
+  const selectedQuestions = useMemo(
+    () => Object.keys(selectedAnswersDict).length,
+    [selectedAnswersDict]
+  );
+
+  const isReady = useMemo(
+    () => questionsCount === selectedQuestions,
+    [questionsCount, selectedQuestions]
+  );
+
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
+
+    if (!isReady) {
+      alert("Please answer all questions before submitting.");
+      return;
+    }
 
     onSubmit({
       results: selectedAnswersDict,
@@ -40,30 +61,43 @@ export const QuestionsSelector = (props: QuizSelectorProps) => {
     });
   };
 
+  useEffect(() => {
+    // Reset selected answers when quiz info changes
+    setSelectedAnswersDict({});
+  }, [quizInfo]);
+
   return (
     <form onSubmit={handleSubmit}>
-      {questionsLoading ? (
-        <p>Loading...</p>
-      ) : (
-        questionsInfoForQuiz.map((questionInfo) => (
-          <QuestionAnswersContainer
-            key={questionInfo.question.replace(" ", "_")}
-            question={questionInfo.question}
-            correctAnswer={questionInfo.correctAnswer || ""}
-            incorrectAnswers={questionInfo.incorrectAnswers || []}
-            selectedAnswer={selectedAnswersDict?.[questionInfo.question] || ""}
-            handleSelect={(answer) => {
-              setSelectedAnswersDict((prev) => ({
-                ...prev,
-                [questionInfo.question]: answer,
-              }));
-            }}
-          />
-        ))
-      )}
-      {questionsError && <strong>{questionsError.message}</strong>}
+      <div className="questions-container">
+        {questionsLoading ? (
+          <p>Loading...</p>
+        ) : (
+          questionsInfoForQuiz.map((questionInfo) => (
+            <QuestionAnswersContainer
+              key={questionInfo.question.replace(" ", "_")}
+              question={questionInfo.question}
+              correctAnswer={questionInfo.correctAnswer || ""}
+              incorrectAnswers={questionInfo.incorrectAnswers || []}
+              selectedAnswer={
+                selectedAnswersDict?.[questionInfo.question] || ""
+              }
+              handleSelect={(answer) => {
+                setSelectedAnswersDict((prev) => ({
+                  ...prev,
+                  [questionInfo.question]: answer,
+                }));
+              }}
+            />
+          ))
+        )}
+        {questionsError && <strong>{questionsError.message}</strong>}
+      </div>
 
-      <button type="submit">Submit</button>
+      {isReady && (
+        <button className="submit-button" type="submit">
+          Submit
+        </button>
+      )}
     </form>
   );
 };

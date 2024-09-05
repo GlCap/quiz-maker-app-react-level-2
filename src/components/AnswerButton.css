@@ -13,7 +13,7 @@
   font-family: inherit;
 }
 
-.answer-button:hover {
+.answer-button:hover:not(.invalid):not(.disabled) {
   background-color: green;
   color: white;
 }

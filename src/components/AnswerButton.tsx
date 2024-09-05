@@ -17,11 +17,18 @@ export const AnswerButton = (props: AnswerButtonProps) => {
   const cls = useMemo(() => {
     if (isInvalid) return "answer-button invalid";
     if (isChecked) return "answer-button checked";
+    if (!handleToggle) return "answer-button disabled";
 
     return "answer-button";
-  }, [isInvalid, isChecked]);
+  }, [isInvalid, isChecked, handleToggle]);
 
   return (
-    <input type="button" className={cls} onClick={handleToggle} value={name} />
+    <input
+      type="button"
+      disabled={!handleToggle}
+      className={cls}
+      onClick={handleToggle}
+      value={name}
+    />
   );
 };

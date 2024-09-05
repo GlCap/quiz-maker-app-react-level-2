@@ -18,8 +18,6 @@ export const QuizHome = () => {
   };
 
   const handleQuizSubmit = (state: QuizState) => {
-    console.log("Selected answers", state);
-
     navigate("/results", { state });
   };
 

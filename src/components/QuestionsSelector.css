@@ -1,0 +1,14 @@
+div.questions-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+
+button.submit-button {
+    margin: 1rem;
+    background-color: gray;
+    width: 100%;
+}
